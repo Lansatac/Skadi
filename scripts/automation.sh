@@ -1,9 +1,12 @@
 #!/bin/bash
-echo "Installing gRPC automation"
+# Specify Branch
+branch="automation"
+
 # Create Automation user and group
 echo "Creating new group 'automationadmmin' and new user 'ottomate' to be used for all automation functions"
+echo "Please enter user information when prompted"
 sudo addgroup automationadmin # Create automation group
-sudo adduser ottomate --disabled-password --gecos "" --shell /bin/bash # Create automation user: follow prompts to enter user information
+sudo adduser ottomate --disabled-password --shell /bin/bash # Create automation user: follow prompts to enter user information
 sudo usermod -aG automationadmin ottomate # Add user to automation group
 
 # Create .ssh directory and authorized_keys file for the new user
@@ -21,24 +24,16 @@ sudo -H python -m pip install grpcio grpcio-tools # Python2 requirements
 
 # Download and place files in the correct places on server
 automation_files=("rc.py" "logging.yaml")
-grpc_files=("rc_client.py" "rc_server.py" "rc.proto") 
+grpc_files=("rc_client.py" "rc_server.py" "rc.proto")
 automation_dir="/var/lib/automation"
-logging_dir="/var/log/automation"
-logging_file="/var/log/automation/skadi_automation.log"
 
 # Create automation directory where all automation files will run from
 sudo mkdir -p "$automation_dir"
 
-# Create directory and set permissions for automation logging
-sudo mkdir -p "$logging_dir"
-sudo touch "$logging_file"
-sudo chown ottomate:ottomate "$logging_file"
-sudo chmod 644 "$logging_file"
-
 # Download and install GRPC files
 for i in "${grpc_files[@]}"
 do
-    wget -O "/tmp/$i" "https://raw.githubusercontent.com/orlikoski/CCF-VM/$branch/scripts/grpc/$i"
+    wget -O "/tmp/$i" "https://raw.githubusercontent.com/rough007/CCF-VM/$branch/scripts/grpc/$i"
     sudo mv "/tmp/$i" "$automation_dir/"
     sudo chown root:root "$automation_dir/$i"
     sudo chmod 644 "$automation_dir/$i"
@@ -54,7 +49,7 @@ sudo chown ottomate:ottomate /var/log/ccfvm.log # change ownershipt to ottomate 
 # Download and install Automation files
 for i in "${automation_files[@]}"
 do
-    wget -O "/tmp/$i" "https://raw.githubusercontent.com/orlikoski/CCF-VM/master/scripts/$i"
+    wget -O "/tmp/$i" "https://raw.githubusercontent.com/rough007/CCF-VM/$branch/scripts/$i"
     sudo mv "/tmp/$i" "$automation_dir/"
     sudo chown root:root "$automation_dir/$i"
     sudo chmod 644 "$automation_dir/$i"
@@ -69,3 +64,4 @@ sudo chmod g+w /etc/systemd/system/ccfvm_grpc.service
 sudo systemctl daemon-reload
 sudo systemctl restart ccfvm_grpc.service
 sudo systemctl enable ccfvm_grpc.service
+
